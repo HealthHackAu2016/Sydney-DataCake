@@ -1,0 +1,55 @@
+----------------------------------------------------
+-- Import GENE from S3
+----------------------------------------------------
+LOAD CSV WITH HEADERS FROM "https://s3-ap-southeast-2.amazonaws.com/sowdatastorage/input/GENE.csv" AS row
+CREATE (n:GENE)
+SET n = row
+
+----------------------------------------------------
+-- Import DISEASE from S3
+----------------------------------------------------
+LOAD CSV WITH HEADERS FROM "https://s3-ap-southeast-2.amazonaws.com/sowdatastorage/input/DISEASE.csv" AS row
+CREATE (n:DISEASE)
+SET n = row
+
+----------------------------------------------------
+-- Import PUBLICATION from S3
+----------------------------------------------------
+LOAD CSV WITH HEADERS FROM "https://s3-ap-southeast-2.amazonaws.com/sowdatastorage/input/Publication.csv" AS row
+CREATE (n:PUBLICATION)
+SET n = row
+
+----------------------------------------------------
+-- Create link Gene - Publication
+----------------------------------------------------
+MATCH (g:GENE),(p:PUBLICATION)
+WHERE g.GENE_ID = p.GENE_ID
+CREATE (g)-[:Is_Mention_In]->(p)
+
+----------------------------------------------------
+-- Create link DISEASE - Publication
+----------------------------------------------------
+MATCH (p:PUBLICATION),(d:DISEASE)
+WHERE p.DISEASE_ID = d.DISEASE_ID
+CREATE (p)-[:Talked_About]->(d)
+
+----------------------------------------------------
+-- Create link GENE - DISEASE
+----------------------------------------------------
+MATCH (a:GENE)-[r1]->(b:PUBLICATION)-[r2]->(c:DISEASE)
+CREATE (a)-[:REL]->(c) 
+
+----------------------------------------------------
+-- SELECT All for a GENE = LRBA
+----------------------------------------------------
+MATCH (n:GENE {GENE_NAME:"LRBA"})--(m:PUBLICATION)--(x:DISEASE) RETURN n,m,x
+
+
+
+
+----------------------------------------------------
+-- CLEAN DATABASE 
+----------------------------------------------------
+MATCH (n)
+OPTIONAL MATCH (n)-[r]-()
+DELETE n,r
