@@ -8,6 +8,11 @@ The folder Neo contains the Neo4j script to load the data from the S3 Storage an
 
 http://artkinetica.wixsite.com/geneality
 
+live database demo (for a very short period of time):
+
+http://52.63.165.85:7474/browser/ 
+password:datacake
+
 ##Licences
 
 MIT License
