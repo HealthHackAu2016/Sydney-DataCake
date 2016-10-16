@@ -1,30 +1,25 @@
-#require("plyr")
-require("xml2")
-require("XML")
-library(httr) 
-#library(readr)
-#library(rjson) 
-#library(dplyr)
+#load Libraries
+library(xml2)
+library(XML)
+library(httr)
 library(jsonlite)
-#library(XML2R)
 
-
-#read it
+#read the Publication file
+#from http://www.disgenet.org/ds/DisGeNET/results/befree_results_only_version_4.0.tar.gz
 ids <- read.csv("~/Downloads/Publication.csv")
 id <- as.data.frame(unique(ids$PMID))
+#Get the unique article ID's
 pages <- list(id)
+#Create an empty dataset to store data
 data <- list()
-# authors <- list()
-# types <- list()
-# keys <- list()
-# i=2
-
-nrow(id)
-#for(i in 1:nrow(id)){
-for(i in 3080:3090) {
+articles <- nrow(id)
+#Start Scrapping information from the articles
+for(i in 1:nrow(id)){
+#Get the XML
   mydata <- content(POST(paste0("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=xml&rettype=abstract&id=", id[as.numeric(i), ])))
-  
-  message("Retrieving page ", i)
+  #Print article
+  message("Retrieving article ", i, " out of ", articles)
+  #Deal with the XML
   xml <-  xmlTreeParse(mydata)
   xml <- xmlParse(mydata)
   title <- as.data.frame(t(xmlSApply(xml["//*/ArticleTitle"],xmlValue)), stringsAsFactors=FALSE)
@@ -33,15 +28,11 @@ for(i in 3080:3090) {
   author <- as.data.frame(t(xmlSApply(xml["//*/ForeName"],xmlValue)), stringsAsFactors=FALSE)
   author2 <- as.data.frame(t(xmlSApply(xml["//*/LastName"],xmlValue)), stringsAsFactors=FALSE)
   type <- as.data.frame(t(xmlSApply(xml["//*/PublicationType"],xmlValue)), stringsAsFactors=FALSE)
-  #id <- as.data.frame(t(xmlSApply(xml['//*/ArticleId"'],xmlValue)), stringsAsFactors=FALSE)
   keywords <- as.data.frame(t(xmlSApply(xml["//*/DescriptorName"],xmlValue)), stringsAsFactors=TRUE)
- 
-   one <- cbind(id[i, ], title, abstract, date_created)
-  names(one) <- c("ID", "Title", "Abstract", "Date Created")
-  
 
-  #titles[[i+1]] <- one  
- # two <- cbind(id[i, ], author)
+  one <- cbind(id[i, ], title, abstract, date_created)
+  names(one) <- c("ID", "Title", "Abstract", "Date Created")
+
   two2 <- NULL
   names <- as.data.frame(t(paste(author, author2, sep= " ")))
   if (ncol(names) == 0) {
@@ -54,13 +45,11 @@ for(i in 3080:3090) {
     two2$Authors <- apply(names[ , 1:ncol(names)] , 1 , paste , collapse = ", " )
   }
   two <- as.data.frame(two2)
- # authors[[i+1]] <- two
-  #three <- cbind(id[i, ], type)
+
   three2 <- NULL
   if (ncol(type) == 0) {
     two2$Types <- data.frame(matrix("NA"))
   }
-  
   if (ncol(type) == 1) {
     three2$Types <-  apply(type, 1 , paste , collapse = " " )
   }
@@ -81,13 +70,14 @@ for(i in 3080:3090) {
     four2$Keywords <- apply( keywords[ , 1:ncol(keywords)] , 1 , paste , collapse = ", " )
   }
   four <- as.data.frame(four2)
- 
-   merge <- cbind(one, two, three, four)
-  data[[i+1]] <- merge  
+  #Final merge of the fields
+  merge <- cbind(one, two, three, four)
+  data[[i+1]] <- merge
+  #Remove rubbish
   rm(xml, one, two, three, four, two2, three2, four2, title, abstract, date_created, author, type, keywords, mydata)
 }
 
-
+#Bind pages
 article <- rbind.pages(data)
+#Write the final file
 write.csv(article, "~/Downloads/Article.csv")
-
