@@ -57,8 +57,7 @@ for(i in 1:nrow(id)){
   three2$Types <- apply(type[ , 1:ncol(type)] , 1 , paste , collapse = ", " )
     }
   three <- as.data.frame(three2)
- # types[[i+1]] <- three
-  #four <- cbind(id[i, ], keywords)
+
   four2 <- NULL
   if (ncol(keywords) == 0) {
     two2$Keywords <- data.frame(matrix("NA"))
