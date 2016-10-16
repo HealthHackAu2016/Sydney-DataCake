@@ -4,6 +4,10 @@ The folder code contain the R script used to scrap data about publications on Pu
 
 The folder Neo contains the Neo4j script to load the data from the S3 Storage and building the graphical model. The data comes from : http://www.disgenet.org/web/DisGeNET/menu/downloads
 
+##website
+
+http://artkinetica.wixsite.com/geneality
+
 ##Licences
 
 MIT License
